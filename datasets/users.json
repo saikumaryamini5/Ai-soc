@@ -1,0 +1,11 @@
+{
+    "robbinhood@missmail.com": {
+        "password": "scrypt:32768:8:1$0nIQqZXK5i2g4cez$750df64cfced03f3758cbc056b944e76d97c12b83f15ed811213b04f386460369e443f148665bc063724297d1140c310e0af372ae3561629ddbd928fd194bc66"
+    },
+    "sai": {
+        "password": "scrypt:32768:8:1$IRtCZxtzvVyscQYn$f4cdc2219f93a3fdfb8d82cf999187d1ffc9bd2136612bec0c90f9cd4e7fc131ba83dd505a5bb828fd2b0ac65c927004fa883d50ac3289b542586cc4e244e30a"
+    },
+    "bruclee__uday": {
+        "password": "scrypt:32768:8:1$nFh3ish4PRRf1vTi$1bd045ccd3172df18629e24cb63c64125199adbbbfd4bbf5b624609c2ca08e4b78107109ec78db4f8c058292f090c46ef1573abb8633984d2808a4935006ad91"
+    }
+}

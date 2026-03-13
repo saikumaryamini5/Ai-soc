@@ -24,11 +24,11 @@
 
 body {
   font-family: var(--font-main);
+  background: var(--bg-dark); /* Fallback */
   background: var(--bg-gradient);
   color: var(--text-main);
   min-height: 100vh;
   overflow-x: hidden;
-  background-attachment: fixed;
 }
 
 /* Scrollbar customization */
@@ -43,9 +43,6 @@ body {
   background: var(--highlight-cyan);
   border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--highlight-pink);
-}
 
 .dashboard-container {
   display: flex;
@@ -55,12 +52,10 @@ body {
 /* Sidebar */
 .sidebar {
   width: 250px;
-  background: rgba(15, 0, 26, 0.8);
-  backdrop-filter: blur(10px);
+  background: rgba(15, 0, 26, 0.95); /* removed blur for performance */
   border-right: 1px solid var(--card-border);
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
   z-index: 100;
 }
 
@@ -76,7 +71,6 @@ body {
   color: var(--highlight-cyan);
   text-transform: uppercase;
   letter-spacing: 2px;
-  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
 }
 
 .logo-area h1 span {
@@ -97,7 +91,6 @@ body {
   text-decoration: none;
   font-size: 18px;
   font-weight: 500;
-  transition: all 0.3s ease;
   border-left: 3px solid transparent;
 }
 
@@ -106,7 +99,6 @@ body {
   color: var(--text-muted);
   width: 25px;
   text-align: center;
-  transition: color 0.3s ease;
 }
 
 .nav-item:hover, .nav-item.active {
@@ -117,7 +109,6 @@ body {
 
 .nav-item:hover i, .nav-item.active i {
   color: var(--highlight-cyan);
-  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
 }
 
 /* Main Content */
@@ -132,8 +123,7 @@ body {
 /* Top Navbar */
 .top-navbar {
   height: 70px;
-  background: rgba(15, 0, 26, 0.8);
-  backdrop-filter: blur(10px);
+  background: rgba(15, 0, 26, 0.95);
   border-bottom: 1px solid var(--card-border);
   display: flex;
   justify-content: space-between;
@@ -178,7 +168,6 @@ body {
   font-size: 20px;
   cursor: pointer;
   position: relative;
-  transition: color 0.3s ease;
 }
 
 .icon-btn:hover {
@@ -195,7 +184,6 @@ body {
   font-weight: bold;
   padding: 2px 5px;
   border-radius: 10px;
-  box-shadow: 0 0 5px rgba(255, 51, 51, 0.5);
 }
 
 .user-profile {
@@ -215,7 +203,6 @@ body {
   align-items: center;
   font-weight: bold;
   color: white;
-  box-shadow: 0 0 10px rgba(255, 0, 200, 0.5);
 }
 
 /* Dashboard Grid */
@@ -241,7 +228,6 @@ body {
   display: flex;
   align-items: center;
   gap: 20px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -255,10 +241,10 @@ body {
   height: 100%;
 }
 
-.stat-card.blue::before { background: var(--highlight-cyan); box-shadow: 0 0 10px var(--highlight-cyan); }
-.stat-card.red::before { background: var(--alert-red); box-shadow: 0 0 10px var(--alert-red); }
-.stat-card.orange::before { background: var(--alert-orange); box-shadow: 0 0 10px var(--alert-orange); }
-.stat-card.green::before { background: var(--highlight-green); box-shadow: 0 0 10px var(--highlight-green); }
+.stat-card.blue::before { background: var(--highlight-cyan); }
+.stat-card.red::before { background: var(--alert-red); }
+.stat-card.orange::before { background: var(--alert-orange); }
+.stat-card.green::before { background: var(--highlight-green); }
 
 .stat-icon {
   font-size: 36px;
@@ -304,7 +290,6 @@ body {
   border: 1px solid var(--card-border);
   border-radius: 10px;
   padding: 20px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .panel-header {
@@ -335,7 +320,6 @@ body {
   font-family: inherit;
   font-size: 14px;
   font-weight: 600;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -344,7 +328,6 @@ body {
 .btn:hover {
   background: var(--highlight-cyan);
   color: var(--bg-dark);
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
 }
 
 .btn.primary {
@@ -356,7 +339,6 @@ body {
 .btn.primary:hover {
   background: var(--highlight-pink);
   color: white;
-  box-shadow: 0 0 10px rgba(255, 0, 200, 0.5);
 }
 
 /* Charts Area */
@@ -438,7 +420,6 @@ body {
   color: var(--highlight-green);
   border-radius: 3px;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
 .btn-small:hover {
@@ -489,10 +470,6 @@ body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.logs-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.03);
-}
-
 .severity-badge {
   padding: 4px 8px;
   border-radius: 12px;
@@ -516,30 +493,4 @@ body {
 .monospaced {
   font-family: 'Courier New', Courier, monospace;
   color: var(--highlight-cyan);
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .main-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    width: 70px;
-  }
-  
-  .logo-area h1 span.desk-only, .nav-item span.desk-only {
-    display: none;
-  }
-  
-  .nav-item {
-    justify-content: center;
-    padding: 15px 0;
-  }
-  
-  .search-bar {
-    width: 150px;
-  }
 }
