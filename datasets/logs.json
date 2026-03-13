@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "timestamp": "2026-03-13T10:00:00Z",
+    "source_ip": "192.168.1.100",
+    "destination_ip": "10.0.0.5",
+    "event_type": "Failed Login",
+    "severity": "high",
+    "status": "blocked"
+  },
+  {
+    "id": 2,
+    "timestamp": "2026-03-13T10:01:00Z",
+    "source_ip": "192.168.1.105",
+    "destination_ip": "10.0.0.8",
+    "event_type": "Successful Login",
+    "severity": "low",
+    "status": "allowed"
+  },
+  {
+    "id": 3,
+    "timestamp": "2026-03-13T10:02:00Z",
+    "source_ip": "45.22.11.99",
+    "destination_ip": "10.0.0.1",
+    "event_type": "Port Scan",
+    "severity": "high",
+    "status": "blocked"
+  },
+  {
+    "id": 4,
+    "timestamp": "2026-03-13T10:03:00Z",
+    "source_ip": "192.168.1.110",
+    "destination_ip": "10.0.0.12",
+    "event_type": "Malware Download Attempt",
+    "severity": "critical",
+    "status": "blocked"
+  },
+  {
+    "id": 5,
+    "timestamp": "2026-03-13T10:04:00Z",
+    "source_ip": "172.16.0.50",
+    "destination_ip": "10.0.0.5",
+    "event_type": "Multiple Failed Logins",
+    "severity": "medium",
+    "status": "flagged"
+  }
+]
