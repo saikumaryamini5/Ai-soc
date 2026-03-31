@@ -1,11 +1,11 @@
 {
-  "total_logs": 120,
-  "today_logs": 120,
-  "critical_alerts": 48,
+  "total_logs": 186,
+  "today_logs": 186,
+  "critical_alerts": 73,
   "history": [
     {
       "date": "2026-03-31",
-      "count": 120
+      "count": 186
     }
   ],
   "_last_date": "2026-03-31"
