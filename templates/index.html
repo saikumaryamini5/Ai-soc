@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SOC Analyst Dashboard</title>
-  <meta name="description" content="Real-time Security Operations Center monitoring dashboard">
+  <meta name="description" content="Real-time Security Operations Center monitoring dashboard with log analytics">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -24,6 +24,7 @@
     </div>
     <ul class="sidebar-nav">
       <li class="nav-item active" data-tab="dashboard"><i class="fas fa-th-large"></i><span>Dashboard</span></li>
+      <li class="nav-item" data-tab="analytics"><i class="fas fa-chart-area"></i><span>Log Analytics</span></li>
       <li class="nav-item" data-tab="logs"><i class="fas fa-scroll"></i><span>Live Logs</span></li>
       <li class="nav-item" data-tab="alerts"><i class="fas fa-bell"></i><span>Alerts</span></li>
       <li class="nav-item" data-tab="incidents"><i class="fas fa-exclamation-triangle"></i><span>Incidents</span></li>
@@ -45,6 +46,7 @@
         <button class="tb-btn tb-cyan" id="btn-refresh" title="Refresh"><i class="fas fa-sync-alt"></i> Refresh</button>
         <button class="tb-btn tb-green" id="btn-add-log" title="Add Log"><i class="fas fa-plus"></i> Add Log</button>
         <a href="/export/pdf" class="tb-btn tb-pink" id="btn-export-pdf" title="Export PDF"><i class="fas fa-file-pdf"></i> Export PDF</a>
+        <button class="tb-btn tb-orange" id="btn-load-logs" title="Load Logs"><i class="fas fa-download"></i> Load</button>
         <button class="tb-btn tb-red" id="btn-clear-logs" title="Clear Logs"><i class="fas fa-trash"></i> Clear</button>
       </div>
       <div class="topbar-right">
@@ -53,20 +55,77 @@
       </div>
     </header>
 
-    <!-- DASHBOARD -->
+    <!-- ==================== DASHBOARD ==================== -->
     <section class="tab-content active" id="tab-dashboard">
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-icon icon-cyan"><i class="fas fa-database"></i></div><div class="stat-info"><span class="stat-value" id="val-logs">0</span><span class="stat-label">Total Logs</span></div></div>
-        <div class="stat-card"><div class="stat-icon icon-pink"><i class="fas fa-bell"></i></div><div class="stat-info"><span class="stat-value" id="val-alerts">0</span><span class="stat-label">Active Alerts</span></div></div>
-        <div class="stat-card"><div class="stat-icon icon-green"><i class="fas fa-bug"></i></div><div class="stat-info"><span class="stat-value" id="val-incidents">0</span><span class="stat-label">Incidents</span></div></div>
-        <div class="stat-card"><div class="stat-icon icon-orange"><i class="fas fa-shield-alt"></i></div><div class="stat-info"><span class="stat-value" id="val-blocked">0</span><span class="stat-label">Blocked IPs</span></div></div>
+      <!-- Row 1: Primary Stats -->
+      <div class="stats-grid stats-grid-4">
+        <div class="stat-card">
+          <div class="stat-icon icon-cyan"><i class="fas fa-database"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="val-logs">0</span>
+            <span class="stat-label">Current Logs</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon icon-pink"><i class="fas fa-bell"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="val-alerts">0</span>
+            <span class="stat-label">Active Alerts</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon icon-green"><i class="fas fa-bug"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="val-incidents">0</span>
+            <span class="stat-label">Incidents</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon icon-orange"><i class="fas fa-shield-alt"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="val-blocked">0</span>
+            <span class="stat-label">Blocked IPs</span>
+          </div>
+        </div>
       </div>
+
+      <!-- Row 2: Lifetime Stats -->
+      <div class="stats-grid stats-grid-3">
+        <div class="stat-card stat-card-accent accent-purple">
+          <div class="stat-icon icon-purple"><i class="fas fa-layer-group"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="val-total-processed">0</span>
+            <span class="stat-label">Total Logs Processed</span>
+          </div>
+          <div class="stat-trend"><i class="fas fa-infinity"></i> Lifetime</div>
+        </div>
+        <div class="stat-card stat-card-accent accent-blue">
+          <div class="stat-icon icon-blue"><i class="fas fa-calendar-day"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="val-today-logs">0</span>
+            <span class="stat-label">Today's Logs</span>
+          </div>
+          <div class="stat-trend"><i class="fas fa-clock"></i> Today</div>
+        </div>
+        <div class="stat-card stat-card-accent accent-red">
+          <div class="stat-icon icon-red"><i class="fas fa-radiation"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="val-critical-alerts">0</span>
+            <span class="stat-label">Critical Alerts</span>
+          </div>
+          <div class="stat-trend"><i class="fas fa-exclamation-circle"></i> All Time</div>
+        </div>
+      </div>
+
+      <!-- Charts -->
       <div class="charts-grid">
         <div class="chart-card"><h3><i class="fas fa-network-wired"></i> Network Traffic</h3><div class="chart-wrap"><canvas id="chart-traffic"></canvas></div></div>
         <div class="chart-card"><h3><i class="fas fa-skull-crossbones"></i> Threat Activity</h3><div class="chart-wrap"><canvas id="chart-threats"></canvas></div></div>
         <div class="chart-card"><h3><i class="fas fa-key"></i> Login Attempts (SSH)</h3><div class="chart-wrap"><canvas id="chart-logins"></canvas></div></div>
         <div class="chart-card"><h3><i class="fas fa-chart-line"></i> Incident Trend (7 Days)</h3><div class="chart-wrap"><canvas id="chart-trend"></canvas></div></div>
       </div>
+
+      <!-- Recent Alerts Table -->
       <div class="section-card">
         <h3><i class="fas fa-exclamation-circle"></i> Recent Critical Alerts</h3>
         <div class="table-wrap">
@@ -75,7 +134,82 @@
       </div>
     </section>
 
-    <!-- LOGS -->
+    <!-- ==================== LOG ANALYTICS ==================== -->
+    <section class="tab-content" id="tab-analytics">
+      <!-- Analytics Header Cards -->
+      <div class="stats-grid stats-grid-3">
+        <div class="stat-card stat-card-accent accent-purple">
+          <div class="stat-icon icon-purple"><i class="fas fa-layer-group"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="analytics-total">0</span>
+            <span class="stat-label">Total Logs Processed</span>
+          </div>
+        </div>
+        <div class="stat-card stat-card-accent accent-blue">
+          <div class="stat-icon icon-blue"><i class="fas fa-calendar-day"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="analytics-today">0</span>
+            <span class="stat-label">Today's Logs</span>
+          </div>
+        </div>
+        <div class="stat-card stat-card-accent accent-red">
+          <div class="stat-icon icon-red"><i class="fas fa-radiation"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="analytics-critical">0</span>
+            <span class="stat-label">Critical Alerts</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analytics Charts -->
+      <div class="charts-grid">
+        <div class="chart-card chart-card-wide">
+          <h3><i class="fas fa-chart-bar"></i> Logs History (Last 30 Days)</h3>
+          <div class="chart-wrap chart-wrap-tall"><canvas id="chart-history"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3><i class="fas fa-chart-pie"></i> Severity Breakdown</h3>
+          <div class="chart-wrap"><canvas id="chart-severity"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Analytics: Severity Progress Bars -->
+      <div class="section-card">
+        <h3><i class="fas fa-signal"></i> Severity Distribution</h3>
+        <div class="severity-bars" id="severity-bars">
+          <div class="sev-bar-row">
+            <span class="sev-bar-label">Critical</span>
+            <div class="sev-bar-track"><div class="sev-bar-fill sev-fill-critical" id="bar-critical" style="width:0%"></div></div>
+            <span class="sev-bar-count" id="bar-critical-n">0</span>
+          </div>
+          <div class="sev-bar-row">
+            <span class="sev-bar-label">High</span>
+            <div class="sev-bar-track"><div class="sev-bar-fill sev-fill-high" id="bar-high" style="width:0%"></div></div>
+            <span class="sev-bar-count" id="bar-high-n">0</span>
+          </div>
+          <div class="sev-bar-row">
+            <span class="sev-bar-label">Medium</span>
+            <div class="sev-bar-track"><div class="sev-bar-fill sev-fill-medium" id="bar-medium" style="width:0%"></div></div>
+            <span class="sev-bar-count" id="bar-medium-n">0</span>
+          </div>
+          <div class="sev-bar-row">
+            <span class="sev-bar-label">Low</span>
+            <div class="sev-bar-track"><div class="sev-bar-fill sev-fill-low" id="bar-low" style="width:0%"></div></div>
+            <span class="sev-bar-count" id="bar-low-n">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Attackers -->
+      <div class="section-card">
+        <h3><i class="fas fa-user-secret"></i> Top Attacker IPs</h3>
+        <div class="table-wrap">
+          <table class="data-table"><thead><tr><th>#</th><th>IP Address</th><th>Events</th><th>Last Seen</th><th>Action</th></tr></thead><tbody id="top-attackers-body"></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== LOGS ==================== -->
     <section class="tab-content" id="tab-logs">
       <div class="section-card">
         <h3><i class="fas fa-scroll"></i> Live Security Logs <span class="badge-live">LIVE</span></h3>
@@ -85,7 +219,7 @@
       </div>
     </section>
 
-    <!-- ALERTS -->
+    <!-- ==================== ALERTS ==================== -->
     <section class="tab-content" id="tab-alerts">
       <div class="section-card">
         <h3><i class="fas fa-bell"></i> Security Alerts (High / Critical)</h3>
@@ -95,7 +229,7 @@
       </div>
     </section>
 
-    <!-- INCIDENTS -->
+    <!-- ==================== INCIDENTS ==================== -->
     <section class="tab-content" id="tab-incidents">
       <div class="section-card">
         <h3><i class="fas fa-exclamation-triangle"></i> Active Incidents</h3>
@@ -105,7 +239,7 @@
       </div>
     </section>
 
-    <!-- SEARCH -->
+    <!-- ==================== SEARCH ==================== -->
     <section class="tab-content" id="tab-search">
       <div class="section-card">
         <h3><i class="fas fa-search"></i> IP Address Search</h3>
@@ -119,7 +253,7 @@
       </div>
     </section>
 
-    <!-- BLOCK IP -->
+    <!-- ==================== BLOCK IP ==================== -->
     <section class="tab-content" id="tab-block">
       <div class="section-card">
         <h3><i class="fas fa-ban"></i> Block Attacker IP</h3>
@@ -146,7 +280,7 @@
         </div>
         <div class="form-row">
           <div class="form-group"><label for="log-event-type">Event Type *</label>
-            <select id="log-event-type" required><option value="PORT_SCAN">Port Scan</option><option value="SSH_BRUTE_FORCE">SSH Brute Force</option><option value="MALWARE_DETECTED">Malware Detected</option><option value="SUSPICIOUS_TRAFFIC">Suspicious Traffic</option></select>
+            <select id="log-event-type" required><option value="PORT_SCAN">Port Scan</option><option value="SSH_BRUTE_FORCE">SSH Brute Force</option><option value="MALWARE_DETECTED">Malware Detected</option><option value="SUSPICIOUS_TRAFFIC">Suspicious Traffic</option><option value="DATA_EXFILTRATION">Data Exfiltration</option><option value="UNAUTHORIZED_ACCESS">Unauthorized Access</option></select>
           </div>
           <div class="form-group"><label for="log-severity">Severity *</label>
             <select id="log-severity" required><option value="low">Low</option><option value="medium">Medium</option><option value="high" selected>High</option><option value="critical">Critical</option></select>
@@ -179,6 +313,9 @@
       </div>
     </div>
   </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container"></div>
 
   <script src="/static/js/script.js"></script>
 </body>

@@ -1,0 +1,12 @@
+{
+  "total_logs": 38,
+  "today_logs": 38,
+  "critical_alerts": 15,
+  "history": [
+    {
+      "date": "2026-03-31",
+      "count": 38
+    }
+  ],
+  "_last_date": "2026-03-31"
+}

@@ -6,21 +6,38 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0f001a,#2b0052,#4b0082);min-height:100vh;display:flex;align-items:center;justify-content:center;color:#e0e0e0}
-    .c{background:rgba(30,0,51,.85);border:1px solid rgba(0,229,255,.15);border-radius:16px;padding:48px 40px;width:100%;max-width:420px;backdrop-filter:blur(20px);box-shadow:0 0 60px rgba(0,229,255,.08),0 20px 60px rgba(0,0,0,.5)}
+    body{font-family:'Inter',sans-serif;background:#0a0014;
+      background-image:radial-gradient(ellipse at 30% 20%,rgba(168,85,247,.1) 0%,transparent 50%),
+      radial-gradient(ellipse at 70% 80%,rgba(0,229,255,.08) 0%,transparent 50%);
+      min-height:100vh;display:flex;align-items:center;justify-content:center;color:#e0e0e0}
+    .c{background:rgba(26,0,51,.9);border:1px solid rgba(0,229,255,.1);border-radius:18px;
+      padding:48px 40px;width:100%;max-width:420px;backdrop-filter:blur(20px);
+      box-shadow:0 0 80px rgba(0,229,255,.06),0 24px 64px rgba(0,0,0,.5);
+      animation:fadeUp .4s ease}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
     .logo{text-align:center;margin-bottom:32px}
-    .logo .s{width:56px;height:56px;background:linear-gradient(135deg,#00e5ff,#ff00c8);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:12px}
-    .logo h1{font-size:22px;font-weight:700;background:linear-gradient(90deg,#00e5ff,#ff00c8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-    .logo p{font-size:13px;color:#888;margin-top:4px}
+    .logo .s{width:60px;height:60px;background:linear-gradient(135deg,#00e5ff,#a855f7);border-radius:16px;
+      display:inline-flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:14px;
+      box-shadow:0 4px 24px rgba(0,229,255,.2)}
+    .logo h1{font-size:22px;font-weight:700;background:linear-gradient(90deg,#00e5ff,#a855f7);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .logo p{font-size:13px;color:#7a7a9a;margin-top:4px}
     .fg{margin-bottom:20px}
-    .fg label{display:block;font-size:13px;font-weight:500;color:#aaa;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
-    .fg input{width:100%;padding:12px 16px;background:rgba(255,255,255,.06);border:1px solid rgba(0,229,255,.2);border-radius:10px;color:#fff;font-size:15px;font-family:'Inter',sans-serif;outline:none;transition:.3s}
-    .fg input:focus{border-color:#00e5ff;box-shadow:0 0 12px rgba(0,229,255,.2)}
-    .btn{width:100%;padding:13px;background:linear-gradient(135deg,#00e5ff,#ff00c8);border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:.2s;margin-top:8px}
-    .btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,229,255,.3)}
-    .ft{text-align:center;margin-top:24px;font-size:13px;color:#888}
+    .fg label{display:block;font-size:12px;font-weight:500;color:#7a7a9a;margin-bottom:6px;
+      text-transform:uppercase;letter-spacing:.6px}
+    .fg input{width:100%;padding:12px 16px;background:rgba(255,255,255,.04);
+      border:1px solid rgba(0,229,255,.15);border-radius:10px;color:#fff;font-size:15px;
+      font-family:'Inter',sans-serif;outline:none;transition:.3s}
+    .fg input:focus{border-color:#00e5ff;box-shadow:0 0 16px rgba(0,229,255,.15)}
+    .btn{width:100%;padding:13px;background:linear-gradient(135deg,#00e5ff,#a855f7);border:none;
+      border-radius:10px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;
+      font-family:'Inter',sans-serif;transition:.2s;margin-top:8px}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,229,255,.25)}
+    .btn:active{transform:translateY(0)}
+    .ft{text-align:center;margin-top:24px;font-size:13px;color:#7a7a9a}
     .ft a{color:#00e5ff;text-decoration:none;font-weight:500}.ft a:hover{text-decoration:underline}
-    .err{background:rgba(255,0,80,.15);border:1px solid rgba(255,0,80,.3);color:#ff4d6d;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:20px;text-align:center}
+    .err{background:rgba(255,45,85,.1);border:1px solid rgba(255,45,85,.2);color:#ff4d6d;
+      padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:20px;text-align:center}
   </style>
 </head>
 <body>

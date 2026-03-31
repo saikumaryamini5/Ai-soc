@@ -1,6 +1,7 @@
 """
 SOC Analyst Dashboard — Flask Backend
-Per-user log isolation, Kali log simulator, alert engine, PDF export.
+Per-user log isolation, Kali log simulator, alert engine, PDF export,
+total-logs tracking, analytics APIs.
 """
 
 import json
@@ -8,6 +9,7 @@ import os
 import random
 import re
 import threading
+import uuid
 from datetime import datetime, timedelta
 from functools import wraps
 from io import BytesIO
@@ -41,14 +43,32 @@ def user_logs_path(username):
     return os.path.join(DATASETS_DIR, f"logs_{_safe_username(username)}.json")
 
 
+def user_stats_path(username):
+    """Return the path to a user's personal stats file."""
+    return os.path.join(DATASETS_DIR, f"stats_{_safe_username(username)}.json")
+
+
 def load_json(filepath):
     with _lock:
         try:
             with open(filepath, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            return data if isinstance(data, list) else []
+            return data if isinstance(data, (list, dict)) else []
         except (FileNotFoundError, json.JSONDecodeError):
             return []
+
+
+def load_stats(filepath):
+    """Load the stats dict file, returning a default dict if missing."""
+    with _lock:
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, dict):
+                return data
+            return {"total_logs": 0, "today_logs": 0, "critical_alerts": 0, "history": []}
+        except (FileNotFoundError, json.JSONDecodeError):
+            return {"total_logs": 0, "today_logs": 0, "critical_alerts": 0, "history": []}
 
 
 def save_json(filepath, data):
@@ -80,6 +100,67 @@ def get_blocked(username):
 
 def next_id(logs):
     return max((l.get("id", 0) for l in logs), default=0) + 1
+
+
+def update_user_stats(username, severity=None):
+    """Increment total_logs and today_logs in the user stats file.
+    If severity is 'critical', also increment critical_alerts."""
+    path = user_stats_path(username)
+    stats = load_stats(path)
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    stats["total_logs"] = stats.get("total_logs", 0) + 1
+
+    # Reset today_logs if the date changed
+    if stats.get("_last_date") != today:
+        stats["today_logs"] = 0
+        stats["_last_date"] = today
+    stats["today_logs"] = stats.get("today_logs", 0) + 1
+
+    if severity and severity.lower() == "critical":
+        stats["critical_alerts"] = stats.get("critical_alerts", 0) + 1
+
+    # History: keep daily totals for the last 30 days
+    history = stats.get("history", [])
+    if history and history[-1].get("date") == today:
+        history[-1]["count"] = history[-1].get("count", 0) + 1
+    else:
+        history.append({"date": today, "count": 1})
+    # Keep last 30 entries
+    if len(history) > 30:
+        history = history[-30:]
+    stats["history"] = history
+
+    save_json(path, stats)
+    return stats
+
+
+def init_user_stats(username, logs):
+    """Initialize stats file from existing logs."""
+    path = user_stats_path(username)
+    if os.path.exists(path):
+        return
+    today = datetime.now().strftime("%Y-%m-%d")
+    total = len(logs)
+    today_count = sum(1 for l in logs if l.get("timestamp", "").startswith(today))
+    critical = sum(1 for l in logs if l.get("severity") == "critical")
+    history = []
+    # Group by date
+    date_counts = {}
+    for l in logs:
+        d = l.get("timestamp", "")[:10]
+        if d:
+            date_counts[d] = date_counts.get(d, 0) + 1
+    for d in sorted(date_counts.keys()):
+        history.append({"date": d, "count": date_counts[d]})
+    stats = {
+        "total_logs": total,
+        "today_logs": today_count,
+        "critical_alerts": critical,
+        "_last_date": today,
+        "history": history[-30:]
+    }
+    save_json(path, stats)
 
 
 # ---------------------------------------------------------------------------
@@ -190,19 +271,20 @@ def generate_random_log(logs):
         "SUSPICIOUS_TRAFFIC": random.choice(["low", "medium"]),
     }
     port = t["port"] if t["port"] else random.choice([80, 443, 445, 3306, 8080, 8443])
+    severity = sev_map.get(t["event_type"], "medium")
     return {
         "id": next_id(logs),
         "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
         "source_ip": ip,
         "destination_ip": random.choice(DEST_IPS),
         "event_type": t["event_type"],
-        "severity": sev_map.get(t["event_type"], "medium"),
+        "severity": severity,
         "message": t["message"].format(ip=ip, n=random.randint(8, 50)),
         "tool": t["tool"],
         "port": port,
         "protocol": t["protocol"],
         "status": random.choice(["open", "filtered", "closed", "blocked"]),
-    }
+    }, severity
 
 
 def maybe_inject(username):
@@ -210,10 +292,12 @@ def maybe_inject(username):
     if random.random() < 0.30:
         path = user_logs_path(username)
         logs = load_json(path)
-        logs.append(generate_random_log(logs))
+        entry, severity = generate_random_log(logs)
+        logs.append(entry)
         if len(logs) > 500:
             logs = logs[-500:]
         save_json(path, logs)
+        update_user_stats(username, severity)
 
 
 # ---------------------------------------------------------------------------
@@ -301,12 +385,15 @@ def build_stats(logs, blocked):
         trend_labels.append(day.strftime("%b %d"))
         trend_data.append(dates.get(day.strftime("%Y-%m-%d"), 0))
 
+    # Severity breakdown for analytics
+    severity_breakdown = {"labels": list(sev.keys()), "data": list(sev.values())}
+
     return {
         "total_logs": len(logs),
         "total_alerts": sev["high"] + sev["critical"],
         "total_incidents": len(inc_keys),
         "blocked_ips": len(blocked),
-        "severity": {"labels": list(sev.keys()), "data": list(sev.values())},
+        "severity": severity_breakdown,
         "threats": threats,
         "traffic": traffic,
         "login_attempts": logins,
@@ -339,7 +426,9 @@ def register():
         # Create personal log file with seed data
         lpath = user_logs_path(username)
         if not os.path.exists(lpath):
-            save_json(lpath, create_seed_logs())
+            seed_logs = create_seed_logs()
+            save_json(lpath, seed_logs)
+            init_user_stats(username, seed_logs)
 
         return redirect(url_for("login"))
     return render_template("register.html")
@@ -358,7 +447,15 @@ def login():
             # Ensure log file exists
             lpath = user_logs_path(username)
             if not os.path.exists(lpath):
-                save_json(lpath, create_seed_logs())
+                seed_logs = create_seed_logs()
+                save_json(lpath, seed_logs)
+                init_user_stats(username, seed_logs)
+            else:
+                # Make sure stats file exists for existing users
+                spath = user_stats_path(username)
+                if not os.path.exists(spath):
+                    logs = load_json(lpath)
+                    init_user_stats(username, logs)
             return redirect(url_for("dashboard"))
         return render_template("login.html", error="Invalid credentials.")
     return render_template("login.html")
@@ -397,9 +494,15 @@ def api_logs():
 def api_search():
     user = current_user()
     ip = request.args.get("ip", "").strip()
+    sev = request.args.get("severity", "").strip().lower()
+    event = request.args.get("event_type", "").strip()
     logs = load_json(user_logs_path(user))
     if ip:
         logs = [l for l in logs if ip in l.get("source_ip", "") or ip in l.get("destination_ip", "")]
+    if sev:
+        logs = [l for l in logs if l.get("severity", "").lower() == sev]
+    if event:
+        logs = [l for l in logs if l.get("event_type", "") == event]
     return jsonify(logs)
 
 
@@ -431,35 +534,70 @@ def api_stats():
 def api_add_log():
     user = current_user()
     data = request.get_json(silent=True) or {}
-    source_ip = data.get("source_ip", "").strip()
-    event_type = data.get("event_type", "").strip()
-    if not source_ip or not event_type:
-        return jsonify({"error": "source_ip and event_type are required."}), 400
 
+    # Validate required fields
+    source_ip = data.get("source_ip", "").strip()
+    destination_ip = data.get("destination_ip", "").strip() or "10.0.0.1"
+    event_type = data.get("event_type", "").strip()
     severity = data.get("severity", "medium").strip().lower()
+    status = data.get("status", "open").strip().lower()
+
+    if not source_ip:
+        return jsonify({"error": "source_ip is required."}), 400
+    if not event_type:
+        return jsonify({"error": "event_type is required."}), 400
+    if not destination_ip:
+        return jsonify({"error": "destination_ip is required."}), 400
     if severity not in ("low", "medium", "high", "critical"):
         severity = "medium"
+    if status not in ("open", "filtered", "closed", "blocked"):
+        status = "open"
 
     path = user_logs_path(user)
     logs = load_json(path)
+
     entry = {
         "id": next_id(logs),
+        "uid": str(uuid.uuid4())[:8],
         "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
         "source_ip": source_ip,
-        "destination_ip": data.get("destination_ip", "10.0.0.1").strip() or "10.0.0.1",
+        "destination_ip": destination_ip,
         "event_type": event_type,
         "severity": severity,
         "message": data.get("message", "").strip() or f"{event_type} from {source_ip}",
-        "tool": "manual",
+        "tool": data.get("tool", "manual").strip() or "manual",
         "port": int(data.get("port", 0)),
-        "protocol": data.get("protocol", "TCP"),
-        "status": data.get("status", "open").strip().lower(),
+        "protocol": data.get("protocol", "TCP").strip() or "TCP",
+        "status": status,
     }
+
     logs.append(entry)
     if len(logs) > 500:
         logs = logs[-500:]
     save_json(path, logs)
+
+    # Update persistent stats
+    update_user_stats(user, severity)
+
     return jsonify({"success": True, "log": entry})
+
+
+@app.route("/api/total-logs")
+@login_required
+def api_total_logs():
+    """Return lifetime stats for the current user."""
+    user = current_user()
+    stats = load_stats(user_stats_path(user))
+    today = datetime.now().strftime("%Y-%m-%d")
+    # If date rolled over, reset today_logs
+    if stats.get("_last_date") != today:
+        stats["today_logs"] = 0
+    return jsonify({
+        "total_logs": stats.get("total_logs", 0),
+        "today_logs": stats.get("today_logs", 0),
+        "critical_alerts": stats.get("critical_alerts", 0),
+        "history": stats.get("history", []),
+    })
 
 
 @app.route("/api/block-ip", methods=["POST"])
@@ -484,7 +622,7 @@ def api_clear_logs():
 
 
 # ---------------------------------------------------------------------------
-# PDF Export — Fixed: writes to BytesIO, sets correct headers
+# PDF Export
 # ---------------------------------------------------------------------------
 
 @app.route("/export/pdf")
@@ -533,7 +671,6 @@ def export_pdf():
             pdf.cell(w, 6, v[:24], border=1, align="C")
         pdf.ln()
 
-    # Output to bytes buffer — no file on disk, no corruption
     pdf_bytes = bytes(pdf.output())
 
     return Response(
