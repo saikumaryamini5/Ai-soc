@@ -765,5 +765,83 @@
     "port": 4444,
     "protocol": "TCP",
     "status": "blocked"
+  },
+  {
+    "id": 60,
+    "timestamp": "2026-03-31T12:15:21",
+    "source_ip": "10.10.14.33",
+    "destination_ip": "10.0.0.11",
+    "event_type": "SUSPICIOUS_TRAFFIC",
+    "severity": "low",
+    "message": "Unusual outbound traffic to known C2 domain from 10.10.14.33",
+    "tool": "tcpdump",
+    "port": 53,
+    "protocol": "TCP",
+    "status": "blocked"
+  },
+  {
+    "id": 61,
+    "timestamp": "2026-03-31T12:16:21",
+    "source_ip": "198.51.100.10",
+    "destination_ip": "10.0.0.14",
+    "event_type": "MALWARE_DETECTED",
+    "severity": "critical",
+    "message": "Reverse shell payload detected in traffic from 198.51.100.10",
+    "tool": "snort",
+    "port": 4444,
+    "protocol": "TCP",
+    "status": "open"
+  },
+  {
+    "id": 62,
+    "timestamp": "2026-03-31T12:17:21",
+    "source_ip": "192.168.1.105",
+    "destination_ip": "10.0.0.1",
+    "event_type": "SSH_BRUTE_FORCE",
+    "severity": "critical",
+    "message": "Multiple failed SSH login attempts from 192.168.1.105 (46 attempts in 60s)",
+    "tool": "auth.log",
+    "port": 22,
+    "protocol": "TCP",
+    "status": "filtered"
+  },
+  {
+    "id": 63,
+    "timestamp": "2026-03-31T12:17:21",
+    "source_ip": "10.10.14.55",
+    "destination_ip": "10.0.0.15",
+    "event_type": "SSH_BRUTE_FORCE",
+    "severity": "critical",
+    "message": "Multiple failed SSH login attempts from 10.10.14.55 (47 attempts in 60s)",
+    "tool": "auth.log",
+    "port": 22,
+    "protocol": "TCP",
+    "status": "filtered"
+  },
+  {
+    "id": 64,
+    "timestamp": "2026-03-31T12:17:21",
+    "source_ip": "198.51.100.10",
+    "destination_ip": "10.0.0.12",
+    "event_type": "PORT_SCAN",
+    "severity": "high",
+    "message": "SYN port scan detected on ports 1-1024 from 198.51.100.10",
+    "tool": "nmap",
+    "port": 80,
+    "protocol": "TCP",
+    "status": "blocked"
+  },
+  {
+    "id": 65,
+    "timestamp": "2026-03-31T12:18:21",
+    "source_ip": "192.168.1.200",
+    "destination_ip": "10.0.0.3",
+    "event_type": "MALWARE_DETECTED",
+    "severity": "critical",
+    "message": "Reverse shell payload detected in traffic from 192.168.1.200",
+    "tool": "snort",
+    "port": 4444,
+    "protocol": "TCP",
+    "status": "filtered"
   }
 ]
